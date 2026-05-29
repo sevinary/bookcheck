@@ -1,0 +1,760 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>📚 책첵 (BookCheck)</title>
+    <style>
+      /* ── 기본 리셋 & 변수 ── */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      :root {
+        --bg: #f5f0e8;
+        --surface: #ffffff;
+        --primary: #4a7c59;
+        --primary-dark: #365c42;
+        --accent: #d4a853;
+        --danger: #c0392b;
+        --text: #2c2c2c;
+        --muted: #888;
+        --border: #ddd;
+        --radius: 12px;
+        --shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+      }
+      body {
+        font-family: "Segoe UI", "Apple SD Gothic Neo", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+      }
+
+      /* ── 헤더 ── */
+      header {
+        background: var(--primary);
+        color: #fff;
+        padding: 20px 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      }
+      header h1 {
+        font-size: 1.4rem;
+        font-weight: 700;
+      }
+      header span {
+        font-size: 1.6rem;
+      }
+      .header-sub {
+        font-size: 0.85rem;
+        opacity: 0.8;
+        margin-left: auto;
+      }
+
+      /* ── 메인 레이아웃 ── */
+      main {
+        max-width: 900px;
+        margin: 32px auto;
+        padding: 0 16px;
+        display: grid;
+        gap: 24px;
+      }
+
+      /* ── 카드 공통 ── */
+      .card {
+        background: var(--surface);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 24px;
+      }
+      .card h2 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--primary-dark);
+        margin-bottom: 16px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid var(--bg);
+      }
+
+      /* ── 입력 폼 ── */
+      .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .form-grid .full {
+        grid-column: 1 / -1;
+      }
+      label {
+        display: block;
+        font-size: 0.8rem;
+        color: var(--muted);
+        margin-bottom: 4px;
+      }
+      input,
+      textarea,
+      select {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1.5px solid var(--border);
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-family: inherit;
+        color: var(--text);
+        background: #fafafa;
+        transition: border-color 0.2s;
+      }
+      input:focus,
+      textarea:focus,
+      select:focus {
+        outline: none;
+        border-color: var(--primary);
+        background: #fff;
+      }
+      textarea {
+        resize: vertical;
+        min-height: 70px;
+      }
+
+      /* ── 별점 입력 ── */
+      .star-input {
+        display: flex;
+        gap: 6px;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+      }
+      .star-input input {
+        display: none;
+      }
+      .star-input label {
+        font-size: 1.6rem;
+        cursor: pointer;
+        color: #ccc;
+        margin: 0;
+        transition: color 0.15s;
+      }
+      .star-input input:checked ~ label,
+      .star-input label:hover,
+      .star-input label:hover ~ label {
+        color: var(--accent);
+      }
+
+      /* ── 버튼 ── */
+      .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition:
+          background 0.2s,
+          transform 0.1s;
+      }
+      .btn:active {
+        transform: scale(0.97);
+      }
+      .btn-primary {
+        background: var(--primary);
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: var(--primary-dark);
+      }
+      .btn-secondary {
+        background: #eee;
+        color: var(--text);
+      }
+      .btn-secondary:hover {
+        background: #ddd;
+      }
+      .btn-danger {
+        background: var(--danger);
+        color: #fff;
+        font-size: 0.8rem;
+        padding: 6px 12px;
+      }
+      .btn-danger:hover {
+        background: #a93226;
+      }
+      .form-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 4px;
+      }
+
+      /* ── 통계 바 ── */
+      .stats {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      .stat-item {
+        background: var(--bg);
+        border-radius: 10px;
+        padding: 12px 20px;
+        text-align: center;
+        flex: 1;
+        min-width: 100px;
+      }
+      .stat-item .num {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--primary);
+      }
+      .stat-item .lbl {
+        font-size: 0.75rem;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+
+      /* ── 검색 & 필터 ── */
+      .filter-bar {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .filter-bar input {
+        flex: 1;
+        min-width: 180px;
+      }
+      .filter-bar select {
+        width: 130px;
+        flex-shrink: 0;
+      }
+
+      /* ── 책 목록 ── */
+      #book-list {
+        display: grid;
+        gap: 14px;
+      }
+      .empty-msg {
+        text-align: center;
+        color: var(--muted);
+        padding: 40px 0;
+        font-size: 0.95rem;
+      }
+
+      /* ── 책 카드 ── */
+      .book-card {
+        background: var(--surface);
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        padding: 16px 20px;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+        align-items: start;
+        transition: box-shadow 0.2s;
+      }
+      .book-card:hover {
+        box-shadow: var(--shadow);
+      }
+      .book-title {
+        font-size: 1rem;
+        font-weight: 700;
+        margin-bottom: 2px;
+      }
+      .book-author {
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+      .book-meta {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        margin-top: 8px;
+        flex-wrap: wrap;
+      }
+      .book-stars {
+        color: var(--accent);
+        font-size: 1rem;
+        letter-spacing: 1px;
+      }
+      .book-date {
+        font-size: 0.78rem;
+        color: var(--muted);
+      }
+      .book-status {
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 3px 9px;
+        border-radius: 20px;
+      }
+      .status-읽는중 {
+        background: #e3f2fd;
+        color: #1565c0;
+      }
+      .status-완독 {
+        background: #e8f5e9;
+        color: #2e7d32;
+      }
+      .status-중단 {
+        background: #fce4ec;
+        color: #c62828;
+      }
+      .status-읽고싶음 {
+        background: #fff8e1;
+        color: #f57f17;
+      }
+      .book-memo {
+        font-size: 0.85rem;
+        color: #555;
+        margin-top: 8px;
+        line-height: 1.5;
+      }
+      .book-actions {
+        display: flex;
+        gap: 6px;
+        flex-shrink: 0;
+      }
+
+      /* ── 편집 모달 ── */
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 100;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+      .modal-overlay.open {
+        display: flex;
+      }
+      .modal {
+        background: #fff;
+        border-radius: var(--radius);
+        padding: 28px;
+        width: 100%;
+        max-width: 520px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2);
+      }
+      .modal h2 {
+        font-size: 1.1rem;
+        margin-bottom: 18px;
+        color: var(--primary-dark);
+      }
+
+      @media (max-width: 600px) {
+        .form-grid {
+          grid-template-columns: 1fr;
+        }
+        .form-grid .full {
+          grid-column: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <span>📚</span>
+      <h1>책첵 (BookCheck)</h1>
+      <div class="header-sub" id="header-sub"></div>
+    </header>
+
+    <main>
+      <!-- 통계 -->
+      <div class="card">
+        <h2>📊 독서 현황</h2>
+        <div class="stats">
+          <div class="stat-item">
+            <div class="num" id="stat-total">0</div>
+            <div class="lbl">전체</div>
+          </div>
+          <div class="stat-item">
+            <div class="num" id="stat-done">0</div>
+            <div class="lbl">완독</div>
+          </div>
+          <div class="stat-item">
+            <div class="num" id="stat-reading">0</div>
+            <div class="lbl">읽는 중</div>
+          </div>
+          <div class="stat-item">
+            <div class="num" id="stat-avg">-</div>
+            <div class="lbl">평균 별점</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 책 추가 폼 -->
+      <div class="card">
+        <h2>➕ 책 추가</h2>
+        <form id="add-form" autocomplete="off">
+          <div class="form-grid">
+            <div>
+              <label>책 제목 *</label>
+              <input
+                type="text"
+                id="f-title"
+                placeholder="책 제목을 입력하세요"
+                required
+              />
+            </div>
+            <div>
+              <label>저자</label>
+              <input type="text" id="f-author" placeholder="저자명" />
+            </div>
+            <div>
+              <label>독서 상태</label>
+              <select id="f-status">
+                <option value="읽고싶음">읽고 싶음</option>
+                <option value="읽는중">읽는 중</option>
+                <option value="완독" selected>완독</option>
+                <option value="중단">중단</option>
+              </select>
+            </div>
+            <div>
+              <label>완독일 (선택)</label>
+              <input type="date" id="f-date" />
+            </div>
+            <div class="full">
+              <label>별점</label>
+              <div class="star-input" id="star-input">
+                <input type="radio" name="rating" id="r5" value="5" /><label
+                  for="r5"
+                  >★</label
+                >
+                <input type="radio" name="rating" id="r4" value="4" /><label
+                  for="r4"
+                  >★</label
+                >
+                <input type="radio" name="rating" id="r3" value="3" /><label
+                  for="r3"
+                  >★</label
+                >
+                <input type="radio" name="rating" id="r2" value="2" /><label
+                  for="r2"
+                  >★</label
+                >
+                <input type="radio" name="rating" id="r1" value="1" /><label
+                  for="r1"
+                  >★</label
+                >
+              </div>
+            </div>
+            <div class="full">
+              <label>메모 / 한줄평</label>
+              <textarea
+                id="f-memo"
+                placeholder="책에 대한 생각을 자유롭게..."
+              ></textarea>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              onclick="resetForm()"
+            >
+              초기화
+            </button>
+            <button type="submit" class="btn btn-primary">기록 추가</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- 검색 & 목록 -->
+      <div class="card">
+        <h2>📖 독서 목록</h2>
+        <div class="filter-bar" style="margin-bottom: 16px">
+          <input
+            type="text"
+            id="search"
+            placeholder="제목 또는 저자 검색..."
+            oninput="renderList()"
+          />
+          <select id="filter-status" onchange="renderList()">
+            <option value="">전체 상태</option>
+            <option value="읽고싶음">읽고 싶음</option>
+            <option value="읽는중">읽는 중</option>
+            <option value="완독">완독</option>
+            <option value="중단">중단</option>
+          </select>
+          <select id="sort-by" onchange="renderList()">
+            <option value="newest">최신순</option>
+            <option value="rating">별점 높은순</option>
+            <option value="title">제목순</option>
+          </select>
+        </div>
+        <div id="book-list"></div>
+      </div>
+    </main>
+
+    <!-- 편집 모달 -->
+    <div class="modal-overlay" id="modal">
+      <div class="modal">
+        <h2>✏️ 기록 수정</h2>
+        <form id="edit-form" autocomplete="off">
+          <div class="form-grid">
+            <div>
+              <label>책 제목 *</label>
+              <input type="text" id="e-title" required />
+            </div>
+            <div>
+              <label>저자</label>
+              <input type="text" id="e-author" />
+            </div>
+            <div>
+              <label>독서 상태</label>
+              <select id="e-status">
+                <option value="읽고싶음">읽고 싶음</option>
+                <option value="읽는중">읽는 중</option>
+                <option value="완독">완독</option>
+                <option value="중단">중단</option>
+              </select>
+            </div>
+            <div>
+              <label>완독일</label>
+              <input type="date" id="e-date" />
+            </div>
+            <div class="full">
+              <label>별점</label>
+              <div class="star-input" id="edit-star-input">
+                <input
+                  type="radio"
+                  name="edit-rating"
+                  id="er5"
+                  value="5"
+                /><label for="er5">★</label>
+                <input
+                  type="radio"
+                  name="edit-rating"
+                  id="er4"
+                  value="4"
+                /><label for="er4">★</label>
+                <input
+                  type="radio"
+                  name="edit-rating"
+                  id="er3"
+                  value="3"
+                /><label for="er3">★</label>
+                <input
+                  type="radio"
+                  name="edit-rating"
+                  id="er2"
+                  value="2"
+                /><label for="er2">★</label>
+                <input
+                  type="radio"
+                  name="edit-rating"
+                  id="er1"
+                  value="1"
+                /><label for="er1">★</label>
+              </div>
+            </div>
+            <div class="full">
+              <label>메모 / 한줄평</label>
+              <textarea id="e-memo"></textarea>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              onclick="closeModal()"
+            >
+              취소
+            </button>
+            <button type="submit" class="btn btn-primary">저장</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      // ── 데이터 관리 ──
+      const STORE_KEY = "book_log_v1";
+      let books = JSON.parse(localStorage.getItem(STORE_KEY) || "[]");
+      let editingId = null;
+
+      function save() {
+        localStorage.setItem(STORE_KEY, JSON.stringify(books));
+      }
+
+      function genId() {
+        return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      }
+
+      // ── 폼 제출: 추가 ──
+      document.getElementById("add-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const rating = document.querySelector('input[name="rating"]:checked');
+        const book = {
+          id: genId(),
+          title: document.getElementById("f-title").value.trim(),
+          author: document.getElementById("f-author").value.trim(),
+          status: document.getElementById("f-status").value,
+          date: document.getElementById("f-date").value,
+          rating: rating ? parseInt(rating.value) : 0,
+          memo: document.getElementById("f-memo").value.trim(),
+          createdAt: Date.now(),
+        };
+        books.unshift(book);
+        save();
+        renderAll();
+        resetForm();
+      });
+
+      function resetForm() {
+        document.getElementById("add-form").reset();
+        document
+          .querySelectorAll('input[name="rating"]')
+          .forEach((r) => (r.checked = false));
+      }
+
+      // ── 삭제 ──
+      function deleteBook(id) {
+        if (!confirm("이 기록을 삭제할까요?")) return;
+        books = books.filter((b) => b.id !== id);
+        save();
+        renderAll();
+      }
+
+      // ── 편집 모달 ──
+      function openEdit(id) {
+        const b = books.find((b) => b.id === id);
+        if (!b) return;
+        editingId = id;
+        document.getElementById("e-title").value = b.title;
+        document.getElementById("e-author").value = b.author;
+        document.getElementById("e-status").value = b.status;
+        document.getElementById("e-date").value = b.date;
+        document.getElementById("e-memo").value = b.memo;
+        document.querySelectorAll('input[name="edit-rating"]').forEach((r) => {
+          r.checked = parseInt(r.value) === b.rating;
+        });
+        document.getElementById("modal").classList.add("open");
+      }
+
+      function closeModal() {
+        document.getElementById("modal").classList.remove("open");
+        editingId = null;
+      }
+
+      document.getElementById("modal").addEventListener("click", (e) => {
+        if (e.target === document.getElementById("modal")) closeModal();
+      });
+
+      document.getElementById("edit-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const idx = books.findIndex((b) => b.id === editingId);
+        if (idx === -1) return;
+        const rating = document.querySelector(
+          'input[name="edit-rating"]:checked',
+        );
+        books[idx] = {
+          ...books[idx],
+          title: document.getElementById("e-title").value.trim(),
+          author: document.getElementById("e-author").value.trim(),
+          status: document.getElementById("e-status").value,
+          date: document.getElementById("e-date").value,
+          rating: rating ? parseInt(rating.value) : 0,
+          memo: document.getElementById("e-memo").value.trim(),
+        };
+        save();
+        renderAll();
+        closeModal();
+      });
+
+      // ── 렌더링 ──
+      function getFiltered() {
+        const q = document.getElementById("search").value.toLowerCase();
+        const st = document.getElementById("filter-status").value;
+        const sort = document.getElementById("sort-by").value;
+        let result = books.filter((b) => {
+          const matchQ =
+            !q ||
+            b.title.toLowerCase().includes(q) ||
+            b.author.toLowerCase().includes(q);
+          const matchSt = !st || b.status === st;
+          return matchQ && matchSt;
+        });
+        if (sort === "rating") result.sort((a, b) => b.rating - a.rating);
+        else if (sort === "title")
+          result.sort((a, b) => a.title.localeCompare(b.title));
+        else result.sort((a, b) => b.createdAt - a.createdAt);
+        return result;
+      }
+
+      function stars(n) {
+        return "★".repeat(n) + "☆".repeat(5 - n);
+      }
+
+      function renderList() {
+        const list = getFiltered();
+        const el = document.getElementById("book-list");
+        if (list.length === 0) {
+          el.innerHTML =
+            '<div class="empty-msg">📭 기록이 없습니다.<br>위 폼에서 첫 번째 책을 추가해보세요!</div>';
+          return;
+        }
+        el.innerHTML = list
+          .map(
+            (b) => `
+      <div class="book-card">
+        <div>
+          <div class="book-title">${escHtml(b.title)}</div>
+          <div class="book-author">${escHtml(b.author) || "저자 미입력"}</div>
+          <div class="book-meta">
+            ${b.rating ? `<span class="book-stars">${stars(b.rating)}</span>` : ""}
+            <span class="book-status status-${b.status}">${b.status}</span>
+            ${b.date ? `<span class="book-date">${b.date}</span>` : ""}
+          </div>
+          ${b.memo ? `<div class="book-memo">${escHtml(b.memo)}</div>` : ""}
+        </div>
+        <div class="book-actions">
+          <button class="btn btn-secondary" style="font-size:0.8rem;padding:6px 12px" onclick="openEdit('${b.id}')">수정</button>
+          <button class="btn btn-danger" onclick="deleteBook('${b.id}')">삭제</button>
+        </div>
+      </div>
+    `,
+          )
+          .join("");
+      }
+
+      function renderStats() {
+        const total = books.length;
+        const done = books.filter((b) => b.status === "완독").length;
+        const reading = books.filter((b) => b.status === "읽는중").length;
+        const rated = books.filter((b) => b.rating > 0);
+        const avg = rated.length
+          ? (rated.reduce((s, b) => s + b.rating, 0) / rated.length).toFixed(1)
+          : "-";
+        document.getElementById("stat-total").textContent = total;
+        document.getElementById("stat-done").textContent = done;
+        document.getElementById("stat-reading").textContent = reading;
+        document.getElementById("stat-avg").textContent =
+          avg === "-" ? "-" : `${avg}★`;
+        document.getElementById("header-sub").textContent =
+          `총 ${total}권 기록 중`;
+      }
+
+      function renderAll() {
+        renderStats();
+        renderList();
+      }
+
+      function escHtml(s) {
+        return s
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      // ── 초기 렌더 ──
+      renderAll();
+    </script>
+  </body>
+</html>
